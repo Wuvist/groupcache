@@ -157,27 +157,32 @@ func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "no such group: "+groupName, http.StatusNotFound)
 		return
 	}
-	var ctx Context
-	if p.Context != nil {
-		ctx = p.Context(r)
-	}
 
-	group.Stats.ServerRequests.Add(1)
-	var value []byte
-	err := group.Get(ctx, key, AllocatingByteSliceSink(&value))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	switch r.Method {
+	case "GET":
+		var ctx Context
+		if p.Context != nil {
+			ctx = p.Context(r)
+		}
+		group.Stats.ServerRequests.Add(1)
+		var value []byte
+		err := group.Get(ctx, key, AllocatingByteSliceSink(&value))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	// Write the value to the response body as a proto message.
-	body, err := proto.Marshal(&pb.GetResponse{Value: value})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		// Write the value to the response body as a proto message.
+		body, err := proto.Marshal(&pb.GetResponse{Value: value})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/x-protobuf")
+		w.Write(body)
+	case "DELETE":
+		group.Remove(key)
 	}
-	w.Header().Set("Content-Type", "application/x-protobuf")
-	w.Write(body)
 }
 
 type httpGetter struct {
