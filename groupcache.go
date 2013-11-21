@@ -232,6 +232,15 @@ func (g *Group) Get(ctx Context, key string, dest Sink) error {
 	return setSinkView(dest, value)
 }
 
+func (g *Group) Remove(key string) {
+	if g.mainCache.lru != nil {
+		g.mainCache.lru.Remove(key)
+	}
+	if g.hotCache.lru != nil {
+		g.hotCache.lru.Remove(key)
+	}
+}
+
 // load loads key either by invoking the getter locally or by sending it to another machine.
 func (g *Group) load(ctx Context, key string, dest Sink) (value ByteView, destPopulated bool, err error) {
 	g.Stats.Loads.Add(1)
