@@ -26,6 +26,7 @@ package groupcache
 
 import (
 	"errors"
+	"log"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -254,7 +255,7 @@ func (g *Group) removeFromGroup(key string) {
 		res := &pb.GetResponse{}
 		err := peer.Delete(nil, req, res)
 		if err != nil {
-			panic("Delete " + key + " from peer failed: " + err.Error())
+			log.Println("Delete " + key + " from peer failed: " + err.Error())
 		}
 	}
 }
@@ -273,7 +274,7 @@ func (g *Group) Remove(key string) {
 		res := &pb.GetResponse{}
 		err := p.Delete(nil, req, res)
 		if err != nil {
-			panic("Delete " + key + " from master peer failed: " + err.Error())
+			log.Println("Delete " + key + " from owner peer failed: " + err.Error())
 		}
 		return
 	}
