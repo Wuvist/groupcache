@@ -260,6 +260,8 @@ func (g *Group) removeFromGroup(key string) {
 }
 
 func (g *Group) Remove(key string) {
+	g.peersOnce.Do(g.initPeers)
+
 	//App calling for key removal
 	p, ok := g.peers.PickPeer(key)
 	if ok {
