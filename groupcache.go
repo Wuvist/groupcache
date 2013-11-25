@@ -275,6 +275,8 @@ func (g *Group) Remove(key string) {
 		err := p.Delete(nil, req, res)
 		if err != nil {
 			log.Println("Delete " + key + " from owner peer failed: " + err.Error())
+			//Let's act as the owner
+			g.removeFromGroup(key)
 		}
 		return
 	}
