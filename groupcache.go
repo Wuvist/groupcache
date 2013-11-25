@@ -241,6 +241,13 @@ func (g *Group) Remove(key string) {
 	}
 }
 
+func (g *Group) FlushAll() {
+	mu.RLock()
+	g.mainCache = cache{}
+	g.hotCache = cache{}
+	mu.RUnlock()
+}
+
 // load loads key either by invoking the getter locally or by sending it to another machine.
 func (g *Group) load(ctx Context, key string, dest Sink) (value ByteView, destPopulated bool, err error) {
 	g.Stats.Loads.Add(1)
