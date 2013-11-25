@@ -232,13 +232,65 @@ func (g *Group) Get(ctx Context, key string, dest Sink) error {
 	return setSinkView(dest, value)
 }
 
-func (g *Group) Remove(key string) {
+func (g *Group) removeFromMyself(key string) {
 	if g.mainCache.lru != nil {
 		g.mainCache.lru.Remove(key)
 	}
 	if g.hotCache.lru != nil {
 		g.hotCache.lru.Remove(key)
 	}
+}
+
+func (g *Group) removeFromGroup(key string) {
+	g.removeFromMyself(key)
+
+	peers := g.peers.GetAllPeers()
+	//Todo: this should be done in parallel
+	for _, peer := range peers {
+		req := &pb.GetRequest{
+			Group: &g.name,
+			Key:   &key,
+		}
+		res := &pb.GetResponse{}
+		err := peer.Delete(nil, req, res)
+		if err != nil {
+			panic("Delete " + key + " from peer failed: " + err.Error())
+		}
+	}
+}
+
+func (g *Group) Remove(key string) {
+	//App calling for key removal
+	p, ok := g.peers.PickPeer(key)
+	if ok {
+		//I'm not the owner, call the owner for removal
+		req := &pb.GetRequest{
+			Group: &g.name,
+			Key:   &key,
+		}
+		res := &pb.GetResponse{}
+		err := p.Delete(nil, req, res)
+		if err != nil {
+			panic("Delete " + key + " from master peer failed: " + err.Error())
+		}
+		return
+	}
+
+	//I'm the owner
+	g.removeFromGroup(key)
+}
+
+func (g *Group) removeByPeer(key string) {
+	g.peersOnce.Do(g.initPeers)
+	_, ok := g.peers.PickPeer(key)
+	if ok {
+		//Peer calling for removal, and I'm not the owner
+		g.removeFromMyself(key)
+		return
+	}
+
+	//I'm the owner, remove from group
+	g.removeFromGroup(key)
 }
 
 func (g *Group) FlushAll() {
