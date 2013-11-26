@@ -138,8 +138,8 @@ func (p *HTTPPool) PickPeer(key string) (ProtoGetter, bool) {
 	return nil, false
 }
 
-func (p *HTTPPool) GetAllPeers() (peer []ProtoGetter) {
-	return p.peerGetters
+func (p *HTTPPool) GetAllPeers() (peers map[string]*httpGetter) {
+	return p.httpGetters
 }
 
 func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -198,7 +198,7 @@ var bufferPool = sync.Pool{
 	New: func() interface{} { return new(bytes.Buffer) },
 }
 
-func (h *httpGetter) Get(context Context, in *pb.GetRequest, out *pb.GetResponse) error {
+func (h *httpGetter) call(context Context, in *pb.GetRequest, out *pb.GetResponse, method string) error {
 	u := fmt.Sprintf(
 		"%v%v/%v",
 		h.baseURL,

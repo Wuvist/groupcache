@@ -239,6 +239,14 @@ func (p *fakePeer) Get(_ Context, in *pb.GetRequest, out *pb.GetResponse) error 
 	return nil
 }
 
+func (p *fakePeer) Delete(_ Context, in *pb.GetRequest, out *pb.GetResponse) error {
+	if p.fail {
+		return errors.New("simulated error from peer")
+	}
+	out.Value = []byte("got:" + in.GetKey())
+	return nil
+}
+
 type fakePeers []ProtoGetter
 
 func (p fakePeers) PickPeer(key string) (peer ProtoGetter, ok bool) {
@@ -247,6 +255,10 @@ func (p fakePeers) PickPeer(key string) (peer ProtoGetter, ok bool) {
 	}
 	n := crc32.Checksum([]byte(key), crc32.IEEETable) % uint32(len(p))
 	return p[n], p[n] != nil
+}
+
+func (p fakePeers) GetAllPeers() (peers map[string]*httpGetter) {
+	return
 }
 
 // tests that peers (virtual, in-process) are hit, and how much.

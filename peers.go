@@ -42,14 +42,14 @@ type PeerPicker interface {
 	PickPeer(key string) (peer ProtoGetter, ok bool)
 
 	//Return all peer
-	GetAllPeers() (peer []ProtoGetter)
+	GetAllPeers() (peers map[string]*httpGetter)
 }
 
 // NoPeers is an implementation of PeerPicker that never finds a peer.
 type NoPeers struct{}
 
 func (NoPeers) PickPeer(key string) (peer ProtoGetter, ok bool) { return }
-func (NoPeers) GetAllPeers() (peer []ProtoGetter)               { return }
+func (NoPeers) GetAllPeers() (peers map[string]*httpGetter)     { return }
 
 var (
 	portPicker func(groupName string) PeerPicker
