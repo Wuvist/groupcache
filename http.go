@@ -126,6 +126,7 @@ func (p *HTTPPool) Set(peers ...string) {
 	}
 }
 
+// PickPeer get peer owns given key
 func (p *HTTPPool) PickPeer(key string) (ProtoGetter, bool) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -138,8 +139,13 @@ func (p *HTTPPool) PickPeer(key string) (ProtoGetter, bool) {
 	return nil, false
 }
 
-func (p *HTTPPool) GetAllPeers() (peers map[string]*httpGetter) {
-	return p.httpGetters
+// GetAllPeers returns all peer
+func (p *HTTPPool) GetAllPeers() (peers map[string]ProtoGetter) {
+	peers = make(map[string]ProtoGetter, len(p.httpGetters))
+	for k, v := range p.httpGetters {
+		peers[k] = v
+	}
+	return
 }
 
 func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {

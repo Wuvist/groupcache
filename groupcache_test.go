@@ -257,7 +257,7 @@ func (p fakePeers) PickPeer(key string) (peer ProtoGetter, ok bool) {
 	return p[n], p[n] != nil
 }
 
-func (p fakePeers) GetAllPeers() (peers map[string]*httpGetter) {
+func (p fakePeers) GetAllPeers() (peers map[string]ProtoGetter) {
 	return
 }
 
