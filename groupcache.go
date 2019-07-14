@@ -260,6 +260,7 @@ func (g *Group) removeFromGroup(key string) {
 	}
 }
 
+// Remove delete given key's cache
 func (g *Group) Remove(key string) {
 	g.peersOnce.Do(g.initPeers)
 
@@ -298,6 +299,7 @@ func (g *Group) removeByPeer(key string) {
 	g.removeFromGroup(key)
 }
 
+// FlushAll remove all cache
 func (g *Group) FlushAll() {
 	mu.RLock()
 	g.mainCache = cache{}
